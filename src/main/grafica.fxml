@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.paint.*?>
+<?import javafx.scene.text.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.image.*?>
+<?import java.lang.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.control.SplitPane?>
+
+<SplitPane fx:id="splite" dividerPositions="0.0" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefWidth="732.0" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="main.Grafica">
+  <items>
+      <AnchorPane fx:id="milena" style="-fx-background-color: #ffffb3;" />
+    <AnchorPane maxWidth="400.0" minHeight="0.0" minWidth="0.0" prefHeight="700.0" prefWidth="319.0" style="-fx-background-color: #ffffb3;">
+         <children>
+            <Label layoutX="94.0" layoutY="14.0" prefHeight="47.0" prefWidth="174.0" text="SLYDRIS" textAlignment="CENTER">
+               <font>
+                  <Font name="Century Schoolbook Italic" size="32.0" />
+               </font></Label>
+            <ImageView fitHeight="85.0" fitWidth="76.0" layoutX="248.0" layoutY="104.0" onMouseClicked="#play" pickOnBounds="true" preserveRatio="true">
+               <image>
+                  <Image url="@play2.png" />
+               </image>
+            </ImageView>
+            <ImageView fitHeight="70.0" fitWidth="68.0" layoutX="252.0" layoutY="279.0" onMouseClicked="#pausa" pickOnBounds="true" preserveRatio="true">
+               <image>
+                  <Image url="@pausa.png" />
+               </image>
+            </ImageView>
+            <ImageView fitHeight="71.0" fitWidth="68.0" layoutX="252.0" layoutY="191.0" onMouseClicked="#unaSolaMossa" pickOnBounds="true" preserveRatio="true">
+               <image>
+                  <Image url="@next.png" />
+               </image>
+            </ImageView>
+            <TextArea fx:id="suggerimenti" layoutX="41.0" layoutY="459.0" prefHeight="80.0" prefWidth="300.0" AnchorPane.bottomAnchor="161.0" />
+            <Text layoutX="50.0" layoutY="563.0" strokeType="OUTSIDE" strokeWidth="0.0" text="Suggerimenti" AnchorPane.bottomAnchor="132.0" />
+            <Button layoutX="268.0" layoutY="547.0" mnemonicParsing="false" onMouseClicked="#generaSuggerimento" text="Genera" AnchorPane.bottomAnchor="121.0">
+               <font>
+                  <Font name="Comic Sans MS" size="15.0" />
+               </font></Button>
+            <Text layoutX="58.0" layoutY="228.0" strokeType="OUTSIDE" strokeWidth="0.0" text="Genera una una sola mossa" />
+            <Text layoutX="207.0" layoutY="144.0" strokeType="OUTSIDE" strokeWidth="0.0" text="Play ">
+               <font>
+                  <Font name="Comic Sans MS" size="15.0" />
+               </font>
+            </Text>
+            <Text layoutX="94.0" layoutY="318.0" strokeType="OUTSIDE" strokeWidth="0.0" text="metti in pausa il gioco" />
+            <Label layoutX="113.0" layoutY="384.0" text="Punteggio: ">
+               <font>
+                  <Font size="31.0" />
+               </font></Label>
+            <Text fx:id="punti" layoutX="276.0" layoutY="425.0" stroke="BLACK" strokeType="OUTSIDE" strokeWidth="0.0" text="0">
+               <font>
+                  <Font size="29.0" />
+               </font></Text>
+         </children>
+      </AnchorPane>
+  </items>
+</SplitPane>

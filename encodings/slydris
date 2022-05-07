@@ -1,0 +1,144 @@
+
+  
+	colonne(1..10).
+	righe(22).
+	
+	%GENERA RIGA
+	righe(X):-piece(X,_,_,_), X!=1.
+	righe(X1):-piece(X,_,_,_), X!=1,X1=X-1.
+	
+
+	sposta(X,Y,X1,Y1)|nonSposta(X,Y,X1,Y1):- piece(X,Y,_,_), colonne(Y1), righe(X1).
+	:-sposta(X1,Y,X2,Y).
+	:-sposta(X,Y,_,Y1), piece(X,Y,T,_), Y1-1+T>=11, T!=1.	
+	:-sposta(X,_,X1,_), X1<X.
+	
+	spostamenti(N):-#count{X,Y,X2,Y2: sposta(X,Y,X2,Y2)}=N.
+	:-spostamenti(N), N!=1.
+
+	colore(C):-piece(_,_,_,C).
+	
+	
+	posOcc(X,Y,Y):-piece(X,Y,_,_).
+	posOcc(X,Y,Y1):-piece(X,Y,2,_), posOcc(X,Y,Y), Y1=Y+1.
+	posOcc(X,Y,Y1):-piece(X,Y,3,_), posOcc(X,Y,Y), Y1=Y+1.
+	posOcc(X,Y,Y1):-piece(X,Y,3,_), posOcc(X,Y,Y), Y1=Y+2.
+	
+	occupera(X,Y,X3,Y3):- sposta(X,Y,X3,Y3),piece(X,Y,_,_).
+	occupera(X,Y,X3,Y2):- sposta(X,Y,X3,Y3),piece(X,Y,2,_),Y2=Y3+1.
+	occupera(X,Y,X3,Y2):- sposta(X,Y,X3,Y3),piece(X,Y,3,_),Y2=Y3+1.
+	occupera(X,Y,X3,Y2):- sposta(X,Y,X3,Y3),piece(X,Y,3,_),Y2=Y3+2.
+	
+	occuperaXY(X1,Y1):-occupera(X,Y,X1,Y1).
+	
+	
+	%NON E' POSSIBILE SPOSTARE IN UNA POSIZIONE SE E GIA OCCUPATA
+	:-sposta(X,Y,X1,Y1), postiOccupati(X1,Y1), X!=X1.
+	:-sposta(X,Y,X1,Y1), postiOccupati(X1,Y2), piece(X,Y,2,_), Y2=Y1+1, X!=X1.
+	:-sposta(X,Y,X1,Y1), postiOccupati(X1,Y2), piece(X,Y,3,_), Y2=Y1+1, X!=X1.
+	:-sposta(X,Y,X1,Y1), postiOccupati(X1,Y2), piece(X,Y,3,_), Y2=Y1+2, X!=X1.
+	
+	%NON E' POSSIBILE SPOSTARE UN PEZZO SE PRIMA C'E' NE UN ALTRO 
+	:-sposta(X,Y,X1,Y1), piece(X,Y,T,_), postiOccupati(X,Y2), Y2>=Y+T, Y2<Y1+T, Y<Y1.
+	:-sposta(X,Y,X1,Y1), postiOccupati(X,Y2), Y2<Y, Y>Y1,Y2>=Y1.
+	
+	%NON E' POSSIBILE SPOSTARE IN Y1(NUOVA POSIZIONE) SE SOPRA CI SONO ALTRI BLOCHI   
+	:-sposta(X,Y,X1,Y1), postiOccupati(X3,Y3), X3>X, X3<X1,piece(X,Y,T,_),Y3>=Y1,Y3<Y1+T.
+	
+	
+	%MINIMIZZARE LE RIGHE NON PIENE
+	
+	%CONTO CELLE OCCUPATE PER OGNI RIGA 
+	contCellOcc(R,N):-righe(R), #count{C: postiOccupati(R,C)}=N,  N!=10.
+	%CONTO CELLE OCCUPATE E SOTTRAGGO IL PEZZO DA SPOSTARE QUINDI CHE NON SARA' PIU' OCCUPATO 
+	contCellOcc(X,M):-righe(X), #count{C: postiOccupati(X,C)}=N,  N!=10, sposta(X,Y,X1,Y1), piece(X,Y,T,_), M=N-T, M>=0, X!=X1.
+	
+	totaleCellOccPerRiga(R,M):-#min{N,R: contCellOcc(R,N)}=M, righe(R).
+	
+	%spostamento su righe diverse con nessuno scendera nella riga in cui sposti
+	spostaConScendera(R,M):- #count{R:sommaConScendera(R,P)}=L,L=0, totaleCellOccPerRiga(R,N),sposta(X,Y,R,_),piece(X,Y,T,C),M=T+N, X!=R.
+	%spostamento su righe diverse con scendera sulla riga in cui sposti
+	spostaConScendera(R,M):- sommaConScendera(R,P),totaleCellOccPerRiga(R,N),sposta(X,Y,R,_),piece(X,Y,T,_),M=T+N+P, X!=R.
+	
+	%spostamento su stessa riga con scendera su riga in cui sposti
+	spostaConScendera(R,M):-sommaConScendera(R,P),totaleCellOccPerRiga(R,N),sposta(R,Y,R,_),M=N+P.
+	%spostamento su stessa riga con nessun scendera su riga in cui sposti
+	spostaConScendera(R,M):-#count{R:sommaConScendera(R,Q)}=P,P=0, totaleCellOccPerRiga(R,N),sposta(R,Y,R,_),M=0.
+	
+	%spostamento su righe diverse ma con scendera sulla riga diversa
+	spostaConScendera(P,M):- sposta(R,_,R2,_),R!=R2,sommaConScendera(P,T),totaleCellOccPerRiga(P,N),P!=R2,M=N+T.
+	spostaConScendera(P,M):- sposta(R,_,R,_),sommaConScendera(P,T),P!=R,totaleCellOccPerRiga(P,N),M=N+T.
+	
+	posVuoti(R,V):- spostaConScendera(R,P),V=10-P.
+	posMin(M):- posVuoti(_,M),#min{V:posVuoti(R,V)}=M.
+	:~ posMin(M).[M@5]
+	
+	
+	
+	postiOccupati(X,Y):- posOcc(X,_,Y).
+	celleVuote(X,Y):-righe(X),colonne(Y), not postiOccupati(X,Y).
+	
+	
+	%MINIMIZZARE LE RIGHE OCCUPATE
+    totRighe(C):- #count{R: postiOccupati(R,_)}=C.
+    
+    contaDopoSposta(R,N):-totaleCellOccPerRiga(R,N).
+	contaDopoSposta(R,M):-totaleCellOccPerRiga(R,N), spostaConScendera(R,M).
+	
+	conTotale(R,M):-righe(R), R!=1, #max{T: contaDopoSposta(R,T)}=M.
+	totaleRighe(T):-#count{X:conTotale(X,C1), C1=0}=M, totRighe(C2), T=C2-M, T>=0.
+	totaleRighe(C):-conTotale(_,C2), C2!=0,totRighe(C).
+	minRighe(M):-#min{C: totaleRighe(C)}=M.
+	:~minRighe(C). [C@4]
+
+
+	%in java rappresenta la funzione restituisci coordinata X
+	contaSotto(C):-sposta(X,Y,X2,Y2),piece(X,Y,T,_),#count{Y3: celleVuote(X3,Y3),Y3>=Y2,Y3<Y2+T}=C,X3=X2+1,X2!=22.
+	:-contaSotto(C),sposta(X,Y,_,_),piece(X,Y,T,_),C>=T.
+	
+
+	
+	pezzoSopra(X,Y):- piece(X,Y,_,_),X=1,sposta(X,Y2,_,_),Y2!=Y.
+	pezzoSopra(X,Y):- piece(X,Y,_,_),X=1,sposta(X2,Y2,_,_),X!=X2.
+	pezzoSopra(X2,I):-sposta(X,Y,X1,Y1), posOcc(X2,I,Y2), piece(X,Y,T,_), X2=X-1,Y2>=Y, Y2<Y+T.
+
+
+	emptyFuturi(X,Y2):-sposta(X,Y,X1,_), piece(X,Y,T,_), colonne(Y2), Y2<Y+T, Y2>=Y, X!=X1.
+	emptyFuturi(X,Y2):-sposta(X,Y,X,Y1), piece(X,Y,T,_), colonne(Y2), Y2<Y+T, Y2>=Y, not occupera(X,Y,X,Y2).
+	
+	
+	
+	%NON VORREI CHE CI FOSSERO POSTI VUOTI SPARSI
+	:~ sposta(X,Y,X2,Y2),piece(X,Y,1,_),celleVuote(X2,Y3),not scendera(X2,Y3),Y3<Y2, Y>Y2. [1@3]
+	:~ sposta(X,Y,X2,Y2),piece(X,Y,1,_),celleVuote(X2,Y3),not scendera(X2,Y3),Y3>Y2, Y<Y2.[1@3]
+	:~ sposta(X,Y,X2,Y2),piece(X,Y,2,_),celleVuote(X2,Y3),celleVuote(X2,Y4),not scendera(X2,Y3),Y3<Y2,Y4=Y3+1, Y>Y2.[1@3]
+	:~ sposta(X,Y,X2,Y2),piece(X,Y,2,_),celleVuote(X2,Y3),celleVuote(X2,Y4),not scendera(X2,Y3),Y3>Y2,Y4=Y3+1, Y<Y2.[1@3]
+	:~ sposta(X,Y,X2,Y2),piece(X,Y,3,_),celleVuote(X2,Y3),celleVuote(X2,Y4),celleVuote(X2,Y5),not scendera(X2,Y3),Y3<Y2,Y4=Y3+1,Y5=Y3+2, Y>Y2.[1@3]
+	:~ sposta(X,Y,X2,Y2),piece(X,Y,3,_),celleVuote(X2,Y3),celleVuote(X2,Y4),celleVuote(X2,Y5),not scendera(X2,Y3),Y3>Y2,Y4=Y3+1,Y5=Y3+2, Y<Y2.[1@3]
+	
+	:~ sposta(X,Y,X2,Y2),celleVuote(X3,Y2), X3=X2+1. [2@3]
+
+	:~celleVuote(X2,Y2), posOcc(X2,_,Y1),posOcc(X2,_,Y3),Y1=Y2-1, Y3=Y2+1,  not sposta(X,Y,X2,Y2), piece(X,Y,1,_),X!=X2. [1@2]
+	:~celleVuote(X2,Y2), celleVuote(X2,Y3), Y3=Y2+1, posOcc(X2,_,Y1),posOcc(X2,_,Y4),Y1=Y2-1, Y4=Y3+1,  not sposta(X,Y,X2,Y2), piece(X,Y,2,_),X!=X2. [1@2]
+	:~celleVuote(X2,Y2), celleVuote(X2,Y3),celleVuote(X2,Y4), Y3=Y2+1,Y4=Y3+1, posOcc(X2,_,Y1),posOcc(X2,_,Y5),Y1=Y2-1, Y5=Y4+1,  not sposta(X,Y,X2,Y2), piece(X,Y,3,_),X!=X2. [1@2]
+
+
+
+	%GENERO LE POSIZIONI IN CUI SCENDERA IL PEZZO_SOPRA 
+	scende(X2,I,X4,I,P)|nonScende(X2,I,X4,I,P):-righe(X4),pezzoSopra(X2,I),piece(X2,I,T,_),#count{Y4: celleVuote(X4,Y4),not occuperaXY(X4,Y4),Y4>=I, Y4<I+T}=C,#count{Y4: emptyFuturi(X4,Y4),not occuperaXY(X4,Y4), Y4>=I, Y4<I+T}=C1,C1+C=P,X4>X2,X4<=22.
+	:-scende(X2,I,X4,I,P),piece(X2,I,T,_),pezzoSopra(X2,I),P!=T.
+	:-nonScende(X2,I,X4,I,P),piece(X2,I,T,_),pezzoSopra(X2,I),P=T,#count{X: nonScende(X2,I,X,I,_),X<X4}=N,N=0.
+	:-scende(X2,I,X4,I,P),piece(X2,I,T,_),pezzoSopra(X2,I),P=T,#count{X: nonScende(X2,I,X,I,_),X<X4}=N,N!=0.
+	
+
+
+	maxScende(Y,I,X4,I):-  righe(X4),pezzoSopra(Y,I),#max{X,I: pezzoSopra(Y,I),scende(Y,I,X,I,_)}=X4.	
+	scendera(X,I,X2,I):-maxScende(X,I,X2,I).
+	
+
+	sommaConScendera(R,T3):- righe(R),scendera(_,_,R,_),#sum{T,X,Y:piece(X,Y,T,_),scendera(X,Y,R,Y)}=T3.
+
+	%MASSIMIZZARE I PEZZI DELLO STESSO COLORE SU UNA RIGA
+	numeriColoreSuRighe(X,C,A):-colore(C),#count{Y:piece(X,Y,_,C)}=A,righe(X),X!=1.
+	:~ numeriColoreSuRighe(X,C4,M),#max{A: numeriColoreSuRighe(X,C,A)}=M,righe(X),sposta(X1,Y1,X,Y2),piece(X1,Y1,_,C1),C4!=C1.[1@1]
+
